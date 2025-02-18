@@ -1,11 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+// import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
 
-  supabase: {
-    redirect: false,
-  },
   postcss: {
     plugins: {
       tailwindcss: {},
@@ -13,5 +12,11 @@ export default defineNuxtConfig({
     },
   },
 
+  supabase: {
+    redirect: false
+  },
+
   modules: ['@nuxtjs/tailwindcss', '@nuxtjs/supabase'],
+  compatibilityDate: '2025-02-17',
 })
+
