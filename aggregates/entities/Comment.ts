@@ -25,6 +25,8 @@ export class CommentEntity {
   public updateCommentContent(newContent: string): void {
     if(newContent.length < 1){
       throw new Error("Comment content cannot be empty");
+    }else if(newContent.length > 500){
+      throw new Error("Comment content cannot exceed 500 characters");
     }
     this.content = newContent;
   }
