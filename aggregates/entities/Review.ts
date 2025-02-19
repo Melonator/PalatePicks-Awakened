@@ -52,12 +52,13 @@ export class ReviewEntity {
 
 
   //TODO: Implement method to modifyComment()
-  public deleteComment(commentId: string){
+  public deleteComment(commentId: string): boolean{
     const initialLength = this.comments.length;
     this.comments = this.comments.filter(comment => comment.commentId !== commentId);
     if(this.comments.length === initialLength){
-      throw new Error("Comment not found");
+      return false;
     }
+    return true;
   }
 
 
