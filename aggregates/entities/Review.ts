@@ -3,6 +3,7 @@ import { CommentProps, CommentEntity } from "./Comment";
 export interface ReviewProps{
   reviewId: string;
   username: string;
+  restaurantName: string;
   reviewSubject: string;
   mainReview: string;
   reviewRating: number;
@@ -18,6 +19,7 @@ export interface ReviewProps{
 export class ReviewEntity {
   public readonly reviewId: string;
   public readonly username: string;
+  public readonly restaurantName: string
   public reviewSubject: string;
   public mainReview: string;
   public reviewRating: number;
@@ -30,6 +32,7 @@ export class ReviewEntity {
   constructor(props: ReviewProps) {
     this.reviewId = props.reviewId;
     this.username = props.username;
+    this.restaurantName = props.restaurantName;
     this.reviewSubject = props.reviewSubject;
     this.mainReview = props.mainReview;
     this.reviewRating = props.reviewRating;
