@@ -64,11 +64,8 @@ export default {
         this.dataSession = {};
         this.loggedUserProfile = []
         this.isLoggedIn = false;
-
+        this.loading = false
         location.reload(true)
-
-
-
       },
       async retrieveSession(){
         this.loading = true
@@ -93,6 +90,7 @@ export default {
         }catch(error){
           alert(error.message)
         }
+        this.loading = false
       },
       async getProfile(session){
         this.loading = true
