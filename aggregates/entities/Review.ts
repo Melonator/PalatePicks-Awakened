@@ -1,7 +1,7 @@
 import { CommentProps, CommentEntity } from "./Comment";
 
 export interface ReviewProps{
-  reviewId: string;
+  reviewId: string | null;
   username: string;
   restaurantName: string;
   reviewSubject: string;
@@ -17,7 +17,7 @@ export interface ReviewProps{
 
 
 export class ReviewEntity {
-  public readonly reviewId: string;
+  public readonly reviewId: string | null = null; //indicator if it's a new review (null id) or existing review (has an id)
   public readonly username: string;
   public readonly restaurantName: string
   public reviewSubject: string;

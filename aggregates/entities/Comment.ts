@@ -1,6 +1,6 @@
 export interface CommentProps {
   commentId: string;
-  reviewId: string;
+  reviewId: string | null;
   username: string;
   commentContent: string;
   commentDate: Date;
@@ -8,8 +8,8 @@ export interface CommentProps {
 }
 
 export class CommentEntity {
-  public readonly commentId: string;
-  public readonly reviewId: string;
+  public readonly commentId: string | null = null;
+  public readonly reviewId: string | null = null;
   public readonly username: string;
   public content: string;
   public readonly commentDate: Date;
