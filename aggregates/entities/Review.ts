@@ -1,7 +1,7 @@
 import { CommentProps, CommentEntity } from "./Comment";
 
 export interface ReviewProps{
-  reviewId: string;
+  reviewId: string | null;
   username: string;
   restaurantName: string;
   reviewSubject: string;
