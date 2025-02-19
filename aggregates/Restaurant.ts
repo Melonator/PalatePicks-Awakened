@@ -35,9 +35,19 @@ export class Restaurant {
     this.restaurantReviews = props.restaurantReviews || [];
   }
 
+  // Change to public if external callers need (like services or UI layers) need to pre-validate before constructing or modifying a review. Else, make it private.
+  private validateReviewContent(reviewContent: string) {
+    if(reviewContent.length < 1){
+      throw new Error("Review content cannot be empty");
+    }else if(reviewContent.length > 500){
+      throw new Error("Review content cannot exceed 500 characters");
+    }
+  }
+
   //TODO: Implement method to addReview()
   public addReview(reviewData: Omit<ReviewEntity, 'restaurantName'>): ReviewEntity {
     const newReview = new ReviewEntity({...reviewData, restaurantName: this.restaurantName});
+    this.validateReviewContent(newReview.mainReview);
     this.restaurantReviews.push(newReview);
     return newReview;
   }
@@ -52,11 +62,13 @@ export class Restaurant {
     return true;
   }
 
+  //TODO: Implement method to modifyReview()
   public modifyReview(reviewId: string, newReviewData: Omit<ReviewEntity, 'restaurantName'>){
     const reviewIndex = this.restaurantReviews.findIndex(review => review.reviewId === reviewId);
     if(reviewIndex === -1){
       throw new Error("Review not found");
     }
+    this.validateReviewContent(this.restaurantReviews[reviewIndex].mainReview);
     this.restaurantReviews[reviewIndex] = new ReviewEntity({...newReviewData, restaurantName: this.restaurantName});
   }
 
@@ -64,5 +76,5 @@ export class Restaurant {
 
 
 
-  //TODO: Implement method to modifyReview()
+
 }
