@@ -1,5 +1,5 @@
 <template>
-  <Preloader v-if="loading" :loading="loading" />
+  <Preloader v-if="false" />
   <div class="header sticky top-0 flex flex-wrap justify-between items-center bg-white text-green flex-row p-5 border-b min-w-screen border-solid z-10">
     <div class="left flex flex-row items-center">
       <NuxtLink class="logo font-cursive normal-case font-bold text-3xl justify-start hidden md:block" to="/">PalatePicks</NuxtLink>
@@ -12,11 +12,16 @@
         <NuxtLink to="/about">About</NuxtLink>
       </div>
     </div>
-    <div v-if="isLoggedIn">
-      <NavUserProfile :session="dataSession" :loggedUserProfile="loggedUserProfile" @logout="logout"/>
+    <div v-if="loading">
+      <NavProfileSkeleton />
     </div>
-    <div v-else>
-      <NavUser />
+    <div v-if="!loading">
+      <div v-if="isLoggedIn">
+        <NavUserProfile :session="dataSession" :loggedUserProfile="loggedUserProfile" @logout="logout"/>
+      </div>
+      <div v-else>
+        <NavUser/>
+      </div>
     </div>
 
 
@@ -47,7 +52,7 @@ export default {
         loggedInUser: "",
         loggedUserProfile: [],
         dataSession: {},
-        loading: false
+        loading: true
       }
     },
     methods: {
@@ -88,9 +93,9 @@ export default {
         }catch(error){
           alert(error.message)
         }
-        this.loading = false
       },
       async getProfile(session){
+        this.loading = true
         const supabase = useSupabaseClient();
 
         try{
@@ -99,7 +104,7 @@ export default {
         }catch(error){
           alert(error.message)
         }
-
+        this.loading = false
       }
     },
     async mounted(){

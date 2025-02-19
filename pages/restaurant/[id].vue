@@ -51,7 +51,7 @@
             </div>
             <div class="reviews-list flex flex-col gap-8">
               <InputReviewBox @update="getReviews" v-if="isReviewBoxOpen" @close="closeReviewBox" :name="restoId"  :isVisible="isReviewBoxOpen" :loggedUserProfile="loggedUserProfile" @preload="togglePreloader" />
-              <ReviewSkeleton @update="getReviews" v-if="loading" v-for="n in [{a: 1}, {a: 2}, {a: 3}, {a: 4}, {a: 5}]" :key="a"/>
+              <ReviewSkeleton @update="getReviews" v-if="loading" v-for="n in 5"/>
               <ReviewBox v-else-if="(restoReviews.length)" v-for="review in restoReviews" :key="review" @refreshRating="getRestaurant" :restoId="restoId" :username="review.reviewer_username" :loggedUserProfile="loggedUserProfile" :isRestoOwner="isRestoOwner" :reviewSubject="review.review_subject" :mainReview="review.content" :rating="review.rating" :date="review.created_at" :helpfulCount="review.helpful_count" :comments="review.comments" :reviewId="review.review_id" :gallery="review.review_gallery" :isEdited="review.is_edited" :didOwnerReply="review.owner_replied"/>
               <div v-else class="no-reviews text-xl font-light text-grey mt-8">
                 <span v-if="!isReviewBoxOpen && !isSearchingReview && !isFilteringReview">No reviews yet. Be the first to review this restaurant!</span>
