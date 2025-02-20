@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div class="review-box flex flex-col bg-green_lightbg p-10 w-[1000px] rounded-3xl">
+  <div class="review-box flex flex-col bg-green_lightbg p-10 my-10 w-[1000px] rounded-3xl">
     <div class="review-info flex flex-col items-start">
       <div class="restaurant name text-3xl bg-grey rounded-2xl animate-pulse h-8 w-72 font-bold hover:underline cursor-pointer">
 <!--        <NuxtLink :to="`/restaurant/${restoName}`">{{ restoName }}</NuxtLink>-->

@@ -13,7 +13,7 @@
     </div>
     <div class="user-reviews px-20 mt-4">
       <p v-if="!loading" class="font-bold p-3">View {{ Profile.first_name }}'s Reviews</p>
-      <UserReviewProfileSkeleton v-if="loading" />
+      <UserReviewProfileSkeleton v-if="loading" v-for="n in 5"/>
       <div v-else class="reviews-list flex flex-col gap-8 mb-24">
         <UserReview v-if="reviews.length" v-for="review in reviews" :key="review" :username="review.username" :loggedUserProfile="loggedUserProfile" :restoName="review.resto_name" :reviewSubject="review.review_subject" :mainReview="review.content" :rating="review.rating" :date="review.created_at" :isEdited="review.is_edited" :helpfulCount="review.helpful_count" :gallery="review.review_gallery"/>
         <div v-else class="flex flex-col ml-3 mt-24 justify-center text-center">
