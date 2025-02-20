@@ -6,7 +6,17 @@ export class UserRepository {
     this.supabase = createClient(supabaseUrl, supabaseKey)
   }
   async findById(userId: string) {
+    const {data, error} = await this.supabase
+      .from('profiles')
+      .select()
+      .eq('username', userId)
+      .single()
 
+    if(error) {
+      throw error
+    }
+
+    console.log(data)
   }
 
   async save(user: any) {
