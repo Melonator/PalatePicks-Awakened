@@ -1,30 +1,65 @@
 <template>
   <Preloader v-if="false" :loading="loading" />
   <div class="min-h-screen pb-80">
-    <div class="h-[250px] md:h-[586px] min-w-screen flex flex-col pl-4 md:pl-56 md:pr-64 justify-center text-white" :style="`background: linear-gradient(0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${Restaurant.imageHeader}); background-size: cover; background-position: center;`">
-      <div class="resto-title font-bold text-3xl md:text-5xl">
-        {{ Restaurant.name }}
+      <div v-if="loading" class="animate-pulse bg-gradient-to-b w-full">
       </div>
-      <div v-if="isRestoOwner" class="text-green text-lg mt-4 bg-white w-56 text-center font-light rounded-2xl p-1">
-        RESTAURANT OWNER
-      </div>
-      <div class="resto-ratings flex mt-3">
-        <div class="resto-rating text-2xl flex pr-3">
-          <img v-for="i in Restaurant.rating" class="star-icon w-25 h-25" src="~/assets/icons/Star.svg" alt="star" :key="i" />
-         <img v-for="i in 5 - rating" class="star-icon w-25 h-25" src="~/assets/icons/Star-blank.svg" alt="star" :key="i" />
+<!--    :class="{-->
+<!--    'animate-pulse bg-gray': loading,-->
+<!--    'h-[250px] md:h-[586px] min-w-screen flex flex-col pl-4 md:pl-56 md:pr-64 justify-center text-white': !loading-->
+<!--    }"-->
+    <div
+      :style="` background: linear-gradient(0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${Restaurant.imageHeader}); background-size: cover; background-position: center;`"
+    >
+      <div class="h-[250px] md:h-[586px] min-w-screen flex flex-col pl-4 md:pl-56 md:pr-64 justify-center text-white">
+        <!-- Skeleton Loader (Shows when loading is true) -->
+        <template v-if="loading">
+          <div class="animate-pulse">
+            <!-- Title Skeleton -->
+            <div class="bg-gray-400 rounded-md w-64 h-8 mb-4"></div>
 
-        </div>
-        <div class="dot text-2xl pr-3">
-          ·
-        </div>
-        <div class="resto-price text-2xl">
-          <span v-for="i in Restaurant.price" class="budget-icon text-xl text-green pr-1" :key="i">
-            ₱
-          </span>
-        </div>
-      </div>
-      <div class="resto-description md:text-lg font-light mt-3">
-        {{ Restaurant.description }}
+            <!-- Owner Tag Skeleton -->
+            <div v-if="isRestoOwner" class="bg-gray-300 w-56 h-6 rounded-2xl mb-4"></div>
+
+            <!-- Ratings Skeleton -->
+            <div class="flex items-center mb-4">
+              <div class="bg-gray-400 w-32 h-6 rounded-md"></div>
+              <div class="dot text-2xl ml-10">·</div>
+              <div class="bg-gray-400 w-16 h-6 rounded-md"></div>
+            </div>
+
+            <!-- Description Skeleton -->
+            <div class="bg-gray-400 w-full h-6 rounded-md mb-2"></div>
+            <div class="bg-gray-400 w-3/4 h-6 rounded-md"></div>
+          </div>
+        </template>
+
+        <!-- Actual Content (Shows when loading is false) -->
+        <template v-else>
+          <div class="resto-title font-bold text-3xl md:text-5xl">
+            {{ Restaurant.name }}
+          </div>
+
+          <div v-if="isRestoOwner" class="text-green text-lg mt-4 bg-white w-56 text-center font-light rounded-2xl p-1">
+            RESTAURANT OWNER
+          </div>
+
+          <div class="resto-ratings flex mt-3 mr-3">
+            <div class="resto-rating text-2xl flex mr-3">
+              <img v-for="i in Restaurant.rating" class="star-icon w-25 h-25" src="~/assets/icons/Star.svg" alt="star" :key="i" />
+              <img v-for="i in 5 - Restaurant.rating" class="star-icon w-25 h-25" src="~/assets/icons/Star-blank.svg" alt="star" :key="i" />
+            </div>
+            <div class="dot text-2xl ml-10">·</div>
+            <div class="resto-price text-2xl pl-3">
+        <span v-for="i in Restaurant.price" class="budget-icon text-xl text-green pr-1" :key="i">
+          ₱
+        </span>
+            </div>
+          </div>
+
+          <div class="resto-description md:text-lg font-light mt-3">
+            {{ Restaurant.description }}
+          </div>
+        </template>
       </div>
     </div>
     <div class="body px-4 md:px-20">
@@ -62,7 +97,7 @@
           </div>
           <div class="review-filters mt-20 flex flex-col w-auto sm:items-end">
             <div class="create-review">
-              <div v-if="!hasReviewed">
+              <div v-if="!hasReviewed || hasReviewed">
                 <button v-if="!isRestoOwner" :disabled="isReviewBoxOpen" :isVisible="isReviewBoxOpen" @click="openReviewBox" class="bg-green text-white rounded-3xl flex justify-center items-center w-full font-light px-6 py-3 mr-4">
                   <span class="text-white text-base uppercase mr-6">Make a review</span>
                   <img src="~/assets/icons/Plus.svg" />
