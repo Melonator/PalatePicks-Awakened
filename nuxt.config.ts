@@ -13,6 +13,7 @@ export default defineNuxtConfig({
   },
   plugins: [
     '~/plugins/repositories',
+    '~/plugins/services'
   ],
   supabase: {
     redirect: false

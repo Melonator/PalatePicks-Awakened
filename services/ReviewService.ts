@@ -1,4 +1,10 @@
-class ReviewService {
+import {createClient, SupabaseClient} from "@supabase/supabase-js";
+
+export class ReviewService {
+  private supabase: SupabaseClient<any, "public", any>
+  constructor (supabaseUrl: string, supabaseKey: string) {
+    this.supabase = createClient(supabaseUrl, supabaseKey)
+  }
   //returns all reviews made by a user
   async findByUser(userId: string) {
 
