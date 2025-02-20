@@ -1,7 +1,8 @@
 <template>
-  <Preloader v-if="loading" :loading="loading" />
+  <Preloader v-if="false" :loading="loading" />
   <div class="min-h-screen mt-24">
-    <div class="profile justify-center flex flex-col items-center"> <!--Profile-->
+    <ProfileBioSkeleton v-if="loading" />
+    <div v-else class="profile justify-center flex flex-col items-center"> <!--Profile-->
       <img :src="Profile.profile_img_src" alt="Avatar" class=" w-48 h-48 rounded-full mt-5 object-center object-cover border-green border-[3px]"/>
       <p class="text-green text-3xl font-bold mt-5">{{ Profile.first_name }} {{ Profile.last_name }}</p>
       <p class="font-medium mt-1 text-xl">@{{ Profile.username }}</p>
@@ -11,11 +12,12 @@
       <button v-if="isUserOwnerOfProfile" class="bg-green text-white px-12 mt-4 py-1 rounded-3xl"><router-link to="/profile/settings">Edit Profile</router-link></button>
     </div>
     <div class="user-reviews px-20 mt-4">
-      <p class="font-bold p-3">View {{ Profile.first_name }}'s Reviews</p>
-      <div class="reviews-list flex flex-col gap-8 mb-24">
+      <p v-if="!loading" class="font-bold p-3">View {{ Profile.first_name }}'s Reviews</p>
+      <UserReviewProfileSkeleton v-if="loading" />
+      <div v-else class="reviews-list flex flex-col gap-8 mb-24">
         <UserReview v-if="reviews.length" v-for="review in reviews" :key="review" :username="review.username" :loggedUserProfile="loggedUserProfile" :restoName="review.resto_name" :reviewSubject="review.review_subject" :mainReview="review.content" :rating="review.rating" :date="review.created_at" :isEdited="review.is_edited" :helpfulCount="review.helpful_count" :gallery="review.review_gallery"/>
         <div v-else class="flex flex-col ml-3 mt-24 justify-center text-center">
-          <p class="text-lg font-light text-grey mt-4">{{ Profile.first_name }} doesn't have reviews yet.</p>
+          <p v-if="!loading" class="text-lg font-light text-grey mt-4">{{ Profile.first_name }} doesn't have reviews yet.</p>
         </div>
       </div>
     </div>
