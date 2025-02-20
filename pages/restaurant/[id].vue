@@ -443,8 +443,6 @@
 
       handleScroll() {
       let element = document.querySelector('.reviews');
-      // console.log(element)
-      // console.log(element.getBoundingClientRect().bottom, window.innerHeight)
       if (element.getBoundingClientRect().bottom < window.innerHeight && !this.loading && !this.loadedAllReviews) {
         this.moreReviews();
       }

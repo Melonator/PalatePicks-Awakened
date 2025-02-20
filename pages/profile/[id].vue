@@ -13,13 +13,13 @@
     </div>
     <div class="user-reviews px-20 mt-4">
       <p v-if="!loading" class="font-bold p-3">View {{ Profile.first_name }}'s Reviews</p>
-      <UserReviewProfileSkeleton v-if="loading" v-for="n in 5"/>
-      <div v-else class="reviews-list flex flex-col gap-8 mb-24">
+      <div class="reviews-list flex flex-col gap-8 mb-24">
         <UserReview v-if="reviews.length" v-for="review in reviews" :key="review" :username="review.username" :loggedUserProfile="loggedUserProfile" :restoName="review.resto_name" :reviewSubject="review.review_subject" :mainReview="review.content" :rating="review.rating" :date="review.created_at" :isEdited="review.is_edited" :helpfulCount="review.helpful_count" :gallery="review.review_gallery"/>
         <div v-else class="flex flex-col ml-3 mt-24 justify-center text-center">
           <p v-if="!loading" class="text-lg font-light text-grey mt-4">{{ Profile.first_name }} doesn't have reviews yet.</p>
         </div>
       </div>
+      <UserReviewProfileSkeleton v-if="loading" v-for="n in 5"/>
     </div>
   </div>
 </template>
@@ -55,6 +55,9 @@ export default {
         reviews: {},
         Profile: {},
         loading: true,
+        start: 0,
+        end: 5,
+        loadedAllReviews: false,
       }
   },
   methods: {
@@ -86,20 +89,57 @@ export default {
           .from('reviews')
           .select()
           .eq('reviewer_username', useRoute().params.id)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .limit(5);
 
         if (error) {
           console.log(error)
         }
         if(data){
+          console.log(data)
           this.reviews = data;
         }
         this.loading = false;
-    }
+    },
 
+    async moreReviews() {
+      this.loading = true;
+      
+      try {
+        const { data, error } = await this.supabase
+          .from('reviews')
+          .select()
+          .eq('reviewer_username', useRoute().params.id)
+          .order('created_at', { ascending: false })
+          .range(this.start, this.end);
 
+        if (error) {
+          console.log(error)
+        }
+        if(data && data.length > 0){
+          this.reviews = [...this.reviews, ...data];
+        }
+        else {
+          this.loadedAllReviews = true;
+        }
+        this.start += 5;
+        this.end += 5;
+      } catch (error) {
+        console.log(error)
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    handleScroll() {
+      let element = document.querySelector('.user-reviews');
+      if (element.getBoundingClientRect().bottom < window.innerHeight && !this.loading && !this.loadedAllReviews) {
+        this.moreReviews();
+      }
+    },
   },
   async mounted() {
+    window.addEventListener("scroll", this.handleScroll);
     await this.getProfile()
     await this.getUserReviews()
 
@@ -109,6 +149,9 @@ export default {
       this.filteredReviews = this.reviews.filter((reviews) => reviews.username === this.username)
     }
 
+  },
+  async unmounted() {
+      window.removeEventListener("scroll", this.handleScroll);
   },
   beforeUpdate(){
     if(this.loggedUserProfile.length){
