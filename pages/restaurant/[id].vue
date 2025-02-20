@@ -158,21 +158,6 @@
       })
     },
 
-    onMounted() {
-      window.addEventListener("scroll", handleScroll);
-    },
-    onUnmounted() {
-      window.removeEventListener("scroll", handleScroll);
-    },
-
-    handleScroll() {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-        if (!this.loadedAllReviews) {
-          this.start += 5;
-          this.end += 5;
-        }
-      }
-    },
     props: {
       session: Object,
       loggedInUser: String,
@@ -413,6 +398,15 @@
           this.loading = false;
         }
       },
+
+      handleScroll() {
+      let element = document.querySelector('.reviews');
+      // console.log(element)
+      // console.log(element.getBoundingClientRect().bottom, window.innerHeight)
+      if (element.getBoundingClientRect().bottom < window.innerHeight && !this.loading && !this.loadedAllReviews) {
+        this.moreReviews();
+      }
+    },
     },
     data() {
       return {
@@ -443,6 +437,7 @@
     computed: {
     },
     async mounted(){
+      window.addEventListener("scroll", this.handleScroll);
       await this.getRestaurant()
       await this.getReviews()
       await this.didUserReview()
@@ -458,6 +453,9 @@
           }
         }
       }
+    },
+    async unmounted() {
+      window.removeEventListener("scroll", this.handleScroll);
     }
   }
 </script>
