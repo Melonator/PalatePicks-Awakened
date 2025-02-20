@@ -23,6 +23,7 @@
     "vue-tsc": "^2.2.2"
   },
   "dependencies": {
-    "@supabase/gotrue-js": "^2.68.0"
+    "@supabase/gotrue-js": "^2.68.0",
+    "@supabase/supabase-js": "^2.48.1"
   }
 }
