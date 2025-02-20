@@ -223,7 +223,7 @@
         this.isFilteringReview = false;
         this.lastSearchQuery = '';
         this.searchQuery = '';
-        this.selectedFilter = 'new-to-old';
+        this.selectedFilter = '';
 
         try {
           const { data, error } = await this.supabase
@@ -282,6 +282,7 @@
       async filterReviews() {
         this.loading = true;
         this.isFilteringReview = true;
+        this.loadedAllReviews = false;
         this.restoReviews = ref([]);
         this.isSearchingReview = false;
         this.lastSearchQuery = '';
@@ -313,6 +314,7 @@
             console.log(error)
           } finally {
             this.loading = false;
+            this.loadedAllReviews = false;
           }
         } else {
           try {
@@ -334,20 +336,26 @@
             console.log(error)
           } finally {
             this.loading = false;
+            this.loadedAllReviews = false;
           }
         }
       },
 
       async moreReviews() {
         this.loading = true;
-        console.log('entered', this.start, this.end)
-        try {
+        var starNo = 0;
+        if (this.selectedFilter.includes('star')) {
+          try {
+
+            starNo = this.starFilter[this.selectedFilter];
+
             const { data, error } = await this.supabase
             .from('reviews')
             .select()
             .eq('resto_name', this.restoId)
-            .order(this.filters[this.selectedFilter][0], { ascending: this.filters[this.selectedFilter][1] })
-            .range(this.start, this.end)
+            .eq('rating', starNo)
+            .order('created_at', { ascending: false })
+            .range(this.start, this.end);
 
             if (data) {
               if (data && data.length > 0) {
@@ -369,6 +377,40 @@
           } finally {
             this.loading = false;
           }
+        } else {
+          if (this.selectedFilter === '') {
+            this.selectedFilter = 'new-to-old';
+          }
+          try {
+              const { data, error } = await this.supabase
+              .from('reviews')
+              .select()
+              .eq('resto_name', this.restoId)
+              .order(this.filters[this.selectedFilter][0], { ascending: this.filters[this.selectedFilter][1] })
+              .range(this.start, this.end)
+
+              if (data) {
+                if (data && data.length > 0) {
+                  this.restoReviews = [...this.restoReviews, ...data];
+                  console.log(this.restoReviews)
+                  this.start += 5;
+                  this.end += 5;
+                }
+                else {
+                  this.loadedAllReviews = true;
+                }
+              }
+
+              if (error) {
+                throw error
+              }
+            } catch(error) {
+              console.log(error)
+            } finally {
+              this.loading = false;
+              this.selectedFilter = '';
+            }
+        }
       },
 
       async didUserReview() {
