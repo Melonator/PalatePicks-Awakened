@@ -86,13 +86,13 @@
             </div>
             <div class="reviews-list flex flex-col gap-8">
               <InputReviewBox @update="getReviews" v-if="isReviewBoxOpen" @close="closeReviewBox" :name="restoId"  :isVisible="isReviewBoxOpen" :loggedUserProfile="loggedUserProfile" @preload="togglePreloader" />
-              <ReviewSkeleton @update="getReviews" v-if="loading" v-for="n in 5"/>
-              <ReviewBox v-else-if="(restoReviews.length)" v-for="review in restoReviews" :key="review" @refreshRating="getRestaurant" :restoId="restoId" :username="review.reviewer_username" :loggedUserProfile="loggedUserProfile" :isRestoOwner="isRestoOwner" :reviewSubject="review.review_subject" :mainReview="review.content" :rating="review.rating" :date="review.created_at" :helpfulCount="review.helpful_count" :comments="review.comments" :reviewId="review.review_id" :gallery="review.review_gallery" :isEdited="review.is_edited" :didOwnerReply="review.owner_replied"/>
+              <ReviewBox @update="getReviews" v-if="(restoReviews.length)" v-for="review in restoReviews" :key="review" @refreshRating="getRestaurant" :restoId="restoId" :username="review.reviewer_username" :loggedUserProfile="loggedUserProfile" :isRestoOwner="isRestoOwner" :reviewSubject="review.review_subject" :mainReview="review.content" :rating="review.rating" :date="review.created_at" :helpfulCount="review.helpful_count" :comments="review.comments" :reviewId="review.review_id" :gallery="review.review_gallery" :isEdited="review.is_edited" :didOwnerReply="review.owner_replied"/>
               <div v-else class="no-reviews text-xl font-light text-grey mt-8">
                 <span v-if="!isReviewBoxOpen && !isSearchingReview && !isFilteringReview">No reviews yet. Be the first to review this restaurant!</span>
                 <span v-else-if="isSearchingReview">No review found matching "{{ this.lastSearchQuery }}".</span>
                 <span v-else-if="isFilteringReview">No review found matching the requested filter.</span>
               </div>
+              <ReviewSkeleton v-if="loading" v-for="n in 5"/>
             </div>
           </div>
           <div class="review-filters mt-20 flex flex-col w-auto sm:items-end">
@@ -151,7 +151,6 @@
         url: `https://palatepicks.vercel.app/resturant/${useRoute().params.id}`,
         keywords: 'food, restaurant, review, food review, restaurant review, foodie, foodie review, foodie restaurant review, foodie review, foodie restaurant review, foodie restaurant, foodie restaurant review, foodie restaurant review',
       })
-      // skeleList = ref([1, 2, 3, 4, 5])
     },
 
     props: {
@@ -226,7 +225,7 @@
           .from('reviews')
           .select()
           .eq('resto_name', this.restoId)
-          .order('owner_replied', { ascending: false });
+          .order('created_at', { ascending: false })
 
           if (data) {
             this.restoReviews = data;
@@ -277,27 +276,17 @@
         this.restoReviews = ref([]);
         var starNo = 0;
 
-
-        if (this.selectedFilter === 'five-stars' || this.selectedFilter === 'four-stars' || this.selectedFilter === 'three-stars' || this.selectedFilter === 'two-stars' || this.selectedFilter === 'one-star') {
+        if (this.selectedFilter.includes('star')) {
           try {
 
-            if (this.selectedFilter === 'five-stars') {
-              starNo = 5;
-            } else if (this.selectedFilter === 'four-stars') {
-              starNo = 4;
-            } else if (this.selectedFilter === 'three-stars') {
-              starNo = 3;
-            } else if (this.selectedFilter === 'two-stars') {
-              starNo = 2;
-            } else if (this.selectedFilter === 'one-star') {
-              starNo = 1;
-            }
+            starNo = this.starFilter[this.selectedFilter];
 
             const { data, error } = await this.supabase
             .from('reviews')
             .select()
             .eq('resto_name', this.restoId)
-            .eq('rating', starNo);
+            .eq('rating', starNo)
+            .order('created_at', { ascending: false });
 
             if (data) {
               this.restoReviews = data;
@@ -311,36 +300,13 @@
           } finally {
             this.loading = false;
           }
-        } else if (this.selectedFilter === 'most-helpful') {
+        } else {
           try {
             const { data, error } = await this.supabase
             .from('reviews')
             .select()
             .eq('resto_name', this.restoId)
-            .order('helpful_count', { ascending: false });
-
-            if (data) {
-              this.restoReviews = data;
-            }
-
-            if (error) {
-              throw error
-            }
-          } catch(error) {
-            console.log(error)
-          } finally {
-            this.loading = false;
-          }
-
-        }
-        else {
-          try {
-            const { data, error } = await this.supabase
-            .from('reviews')
-            .select()
-            .eq('resto_name', this.restoId)
-            .order('created_at', { ascending: this.selectedFilter === 'old-to-new' })
-            .order('created_at', { ascending: this.selectedFilter === 'new-to-old' })
+            .order(this.filters[this.selectedFilter][0], { ascending: this.filters[this.selectedFilter][1] });
 
             if (data) {
               this.restoReviews = data;
@@ -394,12 +360,15 @@
           showMediaView: false,
           selectedMedia: '',
           restoReviews: {},
-          skeleList: {},
           Restaurant: {},
           rating: 0,
           loading: true,
           hasReviewed: false,
-
+          filters: {'new-to-old': ['created_at', false], 'old-to-new': ['created_at', true], 'most-helpful': ['helpful_count', false]},
+          starFilter: {'five-stars': 5, 'four-stars': 4, 'three-stars': 3, 'two-stars': 2, 'one-star': 1},
+          start: 5,
+          end: 9,
+          loadedAllReviews: false,
           searchQuery: '',
           lastSearchQuery: '',
           selectedFilter: '',
@@ -409,15 +378,11 @@
       }
     },
     computed: {
-        skeleList() {
-          return [1, 2, 3, 4, 5]
-        }
     },
     async mounted(){
       await this.getRestaurant()
       await this.getReviews()
       await this.didUserReview()
-      // this.skeleList = [1, 2, 3, 4, 5]
       // If no restaurant object is found (no keys)
       if(Object.keys(this.Restaurant).length === 0){
         throw createError({ statusCode: 404, statusMessage: 'Restaurant not found...', fatal: true})

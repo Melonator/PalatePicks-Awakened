@@ -2,7 +2,7 @@
   <div class="nav-user-profile container mx-auto">
     <div class="relative">
       <div
-        :class="['center', 'bg-green_light', 'px-4', 'py-2', { 'rounded-3xl': !rounded, 'rounded-t-3xl': rounded }, 'flex', { 'active': isDropdownOpen }]"
+        :class="['center', 'bg-green_light', 'px-4', 'py-2', 'rounded-3xl', 'flex']"
       >
         <img class="center w-6 h-6 rounded-full mr-3 object-center object-cover bg-grey animate-pulse"/>
         <span class=" w-14 h-6 bg-grey animate-pulse rounded-xl object-center object-cover"></span>
