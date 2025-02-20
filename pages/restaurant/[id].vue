@@ -93,6 +93,11 @@
                 <span v-else-if="isFilteringReview">No review found matching the requested filter.</span>
               </div>
               <ReviewSkeleton v-if="loading" v-for="n in 5"/>
+              <div v-if="!loading && !loadedAllReviews" class="load-more flex justify-center mt-10">
+                <button @click="moreReviews" class="bg-green text-white rounded-3xl text-center w-full font-light my-5 h-[45px]">
+                  Load More Reviews
+                </button>
+              </div>
             </div>
           </div>
           <div class="review-filters mt-20 flex flex-col w-auto sm:items-end">
@@ -153,6 +158,21 @@
       })
     },
 
+    onMounted() {
+      window.addEventListener("scroll", handleScroll);
+    },
+    onUnmounted() {
+      window.removeEventListener("scroll", handleScroll);
+    },
+
+    handleScroll() {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        if (!this.loadedAllReviews) {
+          this.start += 5;
+          this.end += 5;
+        }
+      }
+    },
     props: {
       session: Object,
       loggedInUser: String,
@@ -218,7 +238,7 @@
         this.isFilteringReview = false;
         this.lastSearchQuery = '';
         this.searchQuery = '';
-        this.selectedFilter = '';
+        this.selectedFilter = 'new-to-old';
 
         try {
           const { data, error } = await this.supabase
@@ -226,6 +246,7 @@
           .select()
           .eq('resto_name', this.restoId)
           .order('created_at', { ascending: false })
+          .limit(5);
 
           if (data) {
             this.restoReviews = data;
@@ -247,14 +268,17 @@
         this.restoReviews = ref([]);
         this.lastSearchQuery = this.searchQuery;
         this.isFilteringReview = false;
-        this.selectedFilter = '';
+        this.selectedFilter = 'new-to-old';
+        this.start = 5;
+        this.end = 9;
 
         try {
           const { data, error } = await this.supabase
           .from('reviews')
           .select()
           .eq('resto_name', this.restoId)
-          .ilike('content', `%${this.searchQuery}%`);
+          .ilike('content', `%${this.searchQuery}%`)
+          .limit(5);
 
           if (data) {
             this.restoReviews = data;
@@ -274,6 +298,10 @@
         this.loading = true;
         this.isFilteringReview = true;
         this.restoReviews = ref([]);
+        this.isSearchingReview = false;
+        this.lastSearchQuery = '';
+        this.start = 5;
+        this.end = 9;
         var starNo = 0;
 
         if (this.selectedFilter.includes('star')) {
@@ -286,7 +314,8 @@
             .select()
             .eq('resto_name', this.restoId)
             .eq('rating', starNo)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(5);
 
             if (data) {
               this.restoReviews = data;
@@ -306,7 +335,8 @@
             .from('reviews')
             .select()
             .eq('resto_name', this.restoId)
-            .order(this.filters[this.selectedFilter][0], { ascending: this.filters[this.selectedFilter][1] });
+            .order(this.filters[this.selectedFilter][0], { ascending: this.filters[this.selectedFilter][1] })
+            .limit(5);
 
             if (data) {
               this.restoReviews = data;
@@ -321,6 +351,39 @@
             this.loading = false;
           }
         }
+      },
+
+      async moreReviews() {
+        this.loading = true;
+        console.log('entered', this.start, this.end)
+        try {
+            const { data, error } = await this.supabase
+            .from('reviews')
+            .select()
+            .eq('resto_name', this.restoId)
+            .order(this.filters[this.selectedFilter][0], { ascending: this.filters[this.selectedFilter][1] })
+            .range(this.start, this.end)
+
+            if (data) {
+              if (data && data.length > 0) {
+                this.restoReviews = [...this.restoReviews, ...data];
+                console.log(this.restoReviews)
+                this.start += 5;
+                this.end += 5;
+              }
+              else {
+                this.loadedAllReviews = true;
+              }
+            }
+
+            if (error) {
+              throw error
+            }
+          } catch(error) {
+            console.log(error)
+          } finally {
+            this.loading = false;
+          }
       },
 
       async didUserReview() {
@@ -371,7 +434,7 @@
           loadedAllReviews: false,
           searchQuery: '',
           lastSearchQuery: '',
-          selectedFilter: '',
+          selectedFilter: 'new-to-old',
           isSearchingReview: false,
           isFilteringReview: false,
           didOwnerReply: false,
