@@ -1,9 +1,9 @@
 class UserRepository {
-  static findById(userId: string) {
+  async findById(userId: string) {
 
   }
 
-  static save(user: any) {
+  async save(user: any) {
 
   }
 }
