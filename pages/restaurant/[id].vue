@@ -374,6 +374,8 @@
 
     },
     async mounted(){
+      const {$userService} = useNuxtApp()
+      console.log(await $userService.findById('jd'))
       await this.getRestaurant()
       await this.getReviews()
       await this.didUserReview()

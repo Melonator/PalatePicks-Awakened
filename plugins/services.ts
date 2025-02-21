@@ -1,5 +1,4 @@
-﻿import {UserRepository} from "../repositories/UserRepository";
-import {CommentsService} from "../services/CommentsService";
+﻿import {CommentsService} from "../services/CommentsService";
 import {HelpfulReviewsService} from "../services/HelpfulReviewsService";
 import {ReviewService} from "../services/ReviewService";
 import {UserService} from "../services/UserService";
