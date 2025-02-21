@@ -9,7 +9,7 @@ export interface ReviewDTO {
   /* NOTE: Do not include user info like their profile picture or name,
    * just add a user_id property.
    */
-  reviewId: string;
+  reviewId: string | null;
   username: string;
   restaurantName: string;
   reviewSubject: string;
@@ -20,6 +20,7 @@ export interface ReviewDTO {
   helpfulCount: number;
   gallery?: string[];
   comments?: CommentDTO[];
+  ownerReplied: boolean;
 }
 
 

@@ -142,140 +142,16 @@ export default {
 
     async handleSubmit(event) {
       event.preventDefault();
-      let reviewId = '';
-      let mediaUrls = [];
-      let mediaFiles = [];
-      this.$emit('preload');
-
-      // Upload review except media
-      try {
-        const {data, error} = await this.supabase
-        .from('reviews')
-        .insert(
-          {
-            review_subject: this.reviewTitle,
-            content: this.reviewContent,
-            rating: this.selectedRating,
-            resto_name: this.name,
-            reviewer_username: this.loggedUserProfile[0].username,
-          }
-        )
-        if (error) {
-          throw error;
-        }
-      } catch(error) {
-        console.log(error);
+      const reviewData = {
+        reviewSubject: this.reviewTitle,
+        content: this.reviewContent,
+        rating: this.selectedRating,
+        restaurantName: this.name,
+        reviewerUsername: this.loggedUserProfile[0].username,
+        fileLocations: this.fileLocs
       }
 
-      // Skip if no media
-      if (this.fileLocs.length === 0) {
-        this.$emit('preload');
-        this.$emit('close');
-        this.$emit('update');
-        location.reload(true);
-        return;
-      }
-
-      // Get Review ID and Upload Media
-      console.log('Getting review ID')
-      try {
-        const {data, error} = await this.supabase
-        .from('reviews')
-        .select('review_id')
-        .eq('reviewer_username', this.loggedUserProfile[0].username)
-        .eq('resto_name', this.name)
-
-        console.log(data);
-        console.log(data[0].review_id);
-        reviewId = data[0].review_id;
-
-        console.log('Uploading media');
-        console.log(this.fileLocs)
-        // Upload media
-        for (let i = 0; i < this.fileLocs.length; i++) {
-          const media = this.fileLocs[i];
-          // console.log(media);
-          const fileExt = media.name.split('.').pop();
-          const fileName = `${i}.${fileExt}`;
-          const filePath = `${reviewId}/${fileName}`;
-
-
-          const {data, error} = await this.supabase.storage
-            .from('reviews-gallery')
-            .upload(filePath, media, {
-              cacheControl: 3600,
-              upsert: false,
-            })
-        }
-        console.log('Uploaded media');
-        if (error) {
-          throw error;
-        }
-      } catch(error) {
-        console.log(error);
-      }
-
-      // Get URL media files from supabase bucket
-      console.log('Getting media file path/s from bucket');
-
-      try {
-        const {data, error} = await this.supabase.storage
-        .from('reviews-gallery')
-        .list(`${reviewId}/`);
-
-        mediaFiles = data.map((file) => `${reviewId}/${file.name}`);
-
-
-        try {
-          for (let i = 0; i < mediaFiles.length; i++) {
-            const media = mediaFiles[i];
-            const {data, error} = await this.supabase.storage
-            .from('reviews-gallery')
-            .getPublicUrl(media);
-            console.log(data);
-            mediaUrls.push(data.publicUrl);
-          }
-          if (error) {
-            throw error;
-          }
-
-        } catch (error) {
-          console.log(error);
-        }
-
-
-
-
-        // Update review with media URL file path
-        console.log('Updating review with media file path');
-
-        try {
-          const {data, error} = await this.supabase
-          .from('reviews')
-          .update(
-            {
-              review_gallery: mediaUrls,
-            }
-          )
-          .eq('review_id', reviewId)
-
-          console.log('Updated review with media file path')
-          if (error) {
-            throw error;
-          }
-        } catch(error) {
-          console.log(error);
-        }
-        if (error) {
-          throw error;
-        }
-      } catch(error) {
-        console.log(error);
-      }
-      finally {
-        this.$emit('preload');
-        location.reload(true);
-      }
+      this.$emit('submit', reviewData);
     },
   },
 }

@@ -219,32 +219,6 @@
       async updateReview(event) {
         event.preventDefault();
 
-        this.status = 'Updating review...';
-        this.loading = true;
-
-
-        let mediaUrls = [];
-        let mediaFiles = [];
-
-        // Update Input Fields ONLY (except Media)
-        try {
-          const {data, error} = await this.supabase
-            .from('reviews')
-            .update({
-              review_subject: this.reviewTitle,
-              content: this.reviewContent,
-              rating: this.selectedRating,
-              is_edited: true,
-            })
-            .eq('review_id', this.reviewId);
-
-          if (error) {
-            throw error;
-          }
-        } catch(error) {
-          console.log(error);
-        }
-
         if (this.fileLocs.length === 0 && this.pressedDelete === false) {
           console.log("No media to upload")
           this.loading = false;
@@ -254,74 +228,6 @@
           return;
         }
 
-        // Delete Media
-          try {
-            console.log('Deleting media from database');
-            const {data, error} = await this.supabase
-              .from('reviews')
-              .update({
-                review_gallery: [],
-              })
-              .eq('review_id', this.reviewId);
-
-              let mediaToDelete = [];
-
-              try {
-                const { data, error} = await this.supabase.storage
-                  .from('reviews-gallery')
-                  .list(`${this.reviewId}/`);
-
-                if (error) {
-                  throw error;
-                }
-
-                mediaToDelete = data.map((file) => `${this.reviewId}/${file.name}`);
-                console.log(mediaToDelete);
-
-              } catch(error) {
-                console.log(error);
-              }
-
-            // Delete listed media from storage
-            try {
-              for (let i = 0; i < mediaToDelete.length; i++) {
-                const { data, error } = await this.supabase.storage
-                  .from('reviews-gallery')
-                  .remove([mediaToDelete[i]]);
-
-                if (error) {
-                  throw error;
-                }
-              }
-            } catch (error) {
-              console.log(error);
-            }
-
-            // Delete all media from database
-            try {
-              const { data, error } = await this.supabase
-                .from('reviews')
-                .update({
-                  review_gallery: [],
-                })
-                .eq('review_id', this.reviewId);
-
-              if (error) {
-                throw error;
-              }
-            } catch (error) {
-              console.log(error);
-            }
-
-
-            if (error) {
-              throw error;
-            }
-          } catch(error) {
-            console.log(error.message);
-          }
-
-
         if (this.pressedDelete === true && this.fileLocs.length === 0) {
           console.log("No media to upload since no files to upload and all media was deleted")
           this.loading = false;
@@ -330,92 +236,17 @@
           this.$emit('reloadRating')
           return;
         }
-        // Upload Media
-        try {
-          for (let i = 0; i < this.fileLocs.length; i++) {
-            const media = this.fileLocs[i];
 
-            const fileExt = media.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `${this.reviewId}/${fileName}`;
-
-
-            const {data, error} = await this.supabase.storage
-              .from('reviews-gallery')
-              .upload(filePath, media, {
-                cacheControl: 1,
-                upsert: false,
-              })
-              if (error) {
-                throw error;
-              }
-          }
-          console.log('Uploaded media');
-        } catch(error) {
-          console.log(error);
+        const reviewData = {
+          reviewSubject: this.reviewTitle,
+          content: this.reviewContent,
+          rating: this.selectedRating,
+          restaurantName: this.name,
+          reviewerUsername: this.loggedUserProfile[0].username,
+          fileLocations: this.fileLocs
         }
 
-        // Get URL media files from supabase bucket
-        console.log('Getting media file path/s from bucket');
-
-        try {
-          const {data, error} = await this.supabase.storage
-          .from('reviews-gallery')
-          .list(`${this.reviewId}/`);
-
-          mediaFiles = [];
-          mediaFiles = data.map((file) => `${this.reviewId}/${file.name}`);
-
-
-          try {
-            for (let i = 0; i < mediaFiles.length; i++) {
-              const media = mediaFiles[i];
-              const {data, error} = await this.supabase.storage
-              .from('reviews-gallery')
-              .getPublicUrl(media);
-              console.log(data);
-              mediaUrls.push(data.publicUrl);
-            }
-            if (error) {
-              throw error;
-            }
-
-          } catch (error) {
-            console.log(error);
-          }
-
-          // Update review with media URL file path
-          console.log('Updating review with media file path');
-
-          try {
-            const {data, error} = await this.supabase
-            .from('reviews')
-            .update(
-              {
-                review_gallery: mediaUrls,
-              }
-            )
-            .eq('review_id', this.reviewId)
-
-            console.log('Updated review with media file path')
-            if (error) {
-              throw error;
-            }
-          } catch(error) {
-            console.log(error);
-          }
-          if (error) {
-            throw error;
-          }
-        } catch(error) {
-          console.log(error);
-        }
-        finally {
-          this.loading = false;
-          this.$emit('update');
-          this.$emit('close');
-          this.$emit('reloadRating')
-        }
+        this.$emit('modify', reviewData)
       },
 
       async deleteReview() {
