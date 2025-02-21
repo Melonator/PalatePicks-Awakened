@@ -11,11 +11,19 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
-
+  plugins: [
+    '~/plugins/repositories',
+    '~/plugins/services'
+  ],
   supabase: {
     redirect: false
   },
-
+  runtimeConfig: {
+    public: {
+      supabaseUrl: process.env.SUPABASE_URL || '',
+      supabaseAnonKey: process.env.SUPABASE_KEY || '',
+    }
+  },
   modules: ['@nuxtjs/tailwindcss', '@nuxtjs/supabase'],
   compatibilityDate: '2025-02-17',
 })
