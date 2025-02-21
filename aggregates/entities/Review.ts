@@ -12,7 +12,7 @@ export interface ReviewProps{
   helpfulCount: number;
   gallery?: string[];
   comments?: CommentEntity[];
-
+  ownerReplied: boolean;
 }
 
 
@@ -28,6 +28,8 @@ export class ReviewEntity {
   public helpfulCount: number;
   public gallery: string[];
   public comments: CommentEntity[];
+  public ownerReplied: boolean;
+  public fileLocations: string[] = [];
 
   constructor(props: ReviewProps) {
     this.reviewId = props.reviewId;
@@ -41,6 +43,7 @@ export class ReviewEntity {
     this.helpfulCount = props.helpfulCount;
     this.gallery = props.gallery || [];
     this.comments = props.comments || [];
+    this.ownerReplied = props.ownerReplied;
   }
 
   //TODO: Implement method to addComment()

@@ -1,6 +1,8 @@
 import {createClient, SupabaseClient} from "@supabase/supabase-js";
 import {ReviewDTO} from "../DTO/ReviewDTO";
 import {ReviewEntity, ReviewProps} from "../aggregates/entities/Review";
+import {Restaurant} from "../aggregates/Restaurant";
+import {CommentEntity, CommentProps} from "../aggregates/entities/Comment";
 
 export class ReviewService {
   private supabase: SupabaseClient<any, "public", any>
@@ -30,11 +32,12 @@ export class ReviewService {
         mainReview: data[i].content,
         reviewRating: data[i].rating,
         helpfulCount: data[i].helpful_count,
-        username: data[i].review_username,
+        username: data[i].reviewer_username,
         restaurantName: data[i].resto_name,
         gallery: data[i].review_gallery,
         reviewDate: data[i].created_at,
         isEdited: data[i].is_edited,
+        ownerReplied: data[i],
       })
     }
 
@@ -42,13 +45,15 @@ export class ReviewService {
   }
 
   //returns reviews of a restaurant, limited by the offset and limit
-  async findByRestaurantPaginated(restaurantId: string, offset: number, limit: number) {
+  private async findByRestaurantPaginated(restaurantId: string, offset: number, limit: number) {
     const {data, error} = await this.supabase
       .from('reviews')
-      .select()
+      .select('*, comments:comments(*)'
+      )
       .eq('resto_name', restaurantId)
       .range(offset, limit + offset - 1)
 
+    console.log(data)
     const reviews: ReviewEntity[] = []
 
     if(error) {
@@ -56,17 +61,31 @@ export class ReviewService {
     }
 
     for(let i = 0; i < data.length; i++) {
+      const comments: CommentEntity[] = []
+      for(let j = 0; j < data[i].comments.length; j++) {
+        const commentProps: CommentProps = {
+          commentId: data[i].comments[j].id,
+          reviewId: data[i].comments[j].review_ref,
+          username: data[i].comments[j].username,
+          commentContent: data[i].comments[j].content,
+          commentDate: data[i].comments[j].created_at,
+        }
+
+        comments.push(new CommentEntity(commentProps))
+      }
       const reviewProps: ReviewProps = {
         reviewId: data[i].review_id,
         reviewSubject: data[i].review_subject,
         mainReview: data[i].content,
         reviewRating: data[i].rating,
         helpfulCount: data[i].helpful_count,
-        username: data[i].review_username,
+        username: data[i].reviewer_username,
         restaurantName: data[i].resto_name,
         gallery: data[i].review_gallery,
         reviewDate: data[i].created_at,
         isEdited: data[i].is_edited,
+        ownerReplied: data[i].owner_replied,
+        comments: comments
       }
 
       reviews.push(new ReviewEntity(reviewProps))
@@ -74,7 +93,12 @@ export class ReviewService {
 
     return reviews;
   }
-
+  public allowFetchReviewEntities(caller: any) {
+    if (!(caller instanceof Restaurant)) {
+      throw new Error('Only a restaurant can fetch its reviews')
+    }
+    return (restaurantId: string, offset: number, limit: number) => this.findByRestaurantPaginated(restaurantId, offset, limit)
+  }
   //checks if the user reviewed on a certain restaurant
   async hasUserReviewed(restaurantId: string, userId: string): Promise<boolean> {
     const {data, error} = await this.supabase
